@@ -366,6 +366,21 @@ router.delete('/api/admin/categories/:id', authenticate, requireAdmin, async (re
   }
 });
 
+// Bulk: fetch all inventory in one query (used by ProductList)
+router.get('/api/admin/inventory', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('inventory')
+      .select('product_id, quantity');
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[Admin] Bulk inventory error:', err);
+    res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
+  }
+});
+
+// Single product inventory (used by ProductDetails)
 router.get('/api/admin/inventory/:productId', authenticate, requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabase

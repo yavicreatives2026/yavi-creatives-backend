@@ -218,20 +218,24 @@ router.delete('/api/cart/:id', authenticate, async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Item removed' });
   } catch (err) {
+    console.error('DELETE /api/cart/:id error:', err);
     res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
   }
 });
 
 router.delete('/api/cart', authenticate, async (req, res) => {
   try {
-    const { data: cart, error: cartError } = await supabase
+    // Use limit(1) instead of maybeSingle() to safely handle duplicate cart rows
+    const { data: carts, error: cartError } = await supabase
       .from('carts')
       .select('id')
       .eq('user_id', req.user.id)
-      .maybeSingle();
+      .limit(1);
 
     if (cartError) throw cartError;
-    if (!cart) return res.json({ message: 'No cart to clear' });
+    if (!carts || carts.length === 0) return res.json({ message: 'No cart to clear' });
+
+    const cart = carts[0];
 
     const { error } = await supabase
       .from('cart_items')
@@ -240,6 +244,7 @@ router.delete('/api/cart', authenticate, async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Cart cleared' });
   } catch (err) {
+    console.error('DELETE /api/cart error:', err);
     res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
   }
 });
