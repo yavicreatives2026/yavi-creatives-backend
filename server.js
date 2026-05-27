@@ -31,6 +31,16 @@ app.use(cors({
 
 app.use(limiter);
 
+// Health Check
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Backend is up and running 🚀',
+    uptime: `${Math.floor(process.uptime())}s`,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Routes
 app.use('/', require('./src/routes/authRoutes'));
 app.use('/', require('./src/routes/productsRoutes'));
